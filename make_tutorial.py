@@ -97,7 +97,7 @@ ctext(W / 2, 96, 'CtrlV 存图 · 三步搞定', font(FB, 92), DARK)
 ctext(W / 2, 220, '在资源管理器窗口或桌面按 Ctrl+V，剪贴板内容自动存到当前文件夹', font(FR, 42), GRAY)
 
 cards = [
-    (150, 1050, '1', '复制图片', 'Win+Shift+S 截图，\n或复制任意图片'),
+    (150, 1050, '1', '截图内容', 'Win+Shift+S 快捷截图'),
     (1150, 2050, '2', '打开文件夹 / 桌面', '在资源管理器窗口，\n或回到桌面'),
     (2150, 3050, '3', '按 Ctrl+V', '图片 / 文字自动存到\n当前文件夹'),
 ]
@@ -122,8 +122,10 @@ for x0, x1, num, title, sub in cards:
         rrect([cx - 190, icy - 70, cx + 190, icy + 70], 26, fill=WHITE, outline=BLUE, width=14)
         ctext(cx, icy - 40, 'Ctrl + V', font(FB, 60), BLUE)
     ctext(cx, 900, title, font(FB, 56), DARK)
-    for i, line in enumerate(sub.split('\n')):
-        ctext(cx, 990 + i * 56, line, font(FR, 38), GRAY)
+    lines = sub.split('\n')
+    start = 990 + (2 - len(lines)) * 28
+    for i, line in enumerate(lines):
+        ctext(cx, start + i * 56, line, font(FR, 38), GRAY)
 
 arrow(1100, 770, 26, (170, 190, 220))
 arrow(2100, 770, 26, (170, 190, 220))
