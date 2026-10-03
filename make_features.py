@@ -16,6 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # -*- coding: utf-8 -*-
 """生成功能特性图 features.png。"""
+import math
 from PIL import Image, ImageDraw, ImageFont
 
 F = 2
@@ -42,23 +43,33 @@ img = Image.new('RGB', (W, H), BG)
 d = ImageDraw.Draw(img)
 
 
-def rrect(box, r, fill=None, outline=None, width=1):
+def rpath(box, r, steps=28):
     x0, y0, x1, y1 = box
-    d.rectangle([x0 + r, y0, x1 - r, y1], fill=fill)
-    d.rectangle([x0, y0 + r, x1, y1 - r], fill=fill)
-    d.pieslice([x0, y0, x0 + 2 * r, y0 + 2 * r], 180, 270, fill=fill)
-    d.pieslice([x1 - 2 * r, y0, x1, y0 + 2 * r], 270, 360, fill=fill)
-    d.pieslice([x0, y1 - 2 * r, x0 + 2 * r, y1], 90, 180, fill=fill)
-    d.pieslice([x1 - 2 * r, y1 - 2 * r, x1, y1], 0, 90, fill=fill)
+    pts = [(x0 + r, y0), (x1 - r, y0)]
+    for i in range(1, steps + 1):
+        a = math.radians(-90 + 90.0 * i / steps)
+        pts.append((x1 - r + r * math.cos(a), y0 + r + r * math.sin(a)))
+    pts.append((x1, y1 - r))
+    for i in range(1, steps + 1):
+        a = math.radians(90.0 * i / steps)
+        pts.append((x1 - r + r * math.cos(a), y1 - r + r * math.sin(a)))
+    pts.append((x0 + r, y1))
+    for i in range(1, steps + 1):
+        a = math.radians(90 + 90.0 * i / steps)
+        pts.append((x0 + r + r * math.cos(a), y1 - r + r * math.sin(a)))
+    pts.append((x0, y0 + r))
+    for i in range(1, steps + 1):
+        a = math.radians(180 + 90.0 * i / steps)
+        pts.append((x0 + r + r * math.cos(a), y0 + r + r * math.sin(a)))
+    return pts
+
+
+def rrect(box, r, fill=None, outline=None, width=1):
+    pts = rpath(box, r)
+    if fill:
+        d.polygon(pts, fill=fill)
     if outline:
-        d.arc([x0, y0, x0 + 2 * r, y0 + 2 * r], 180, 270, fill=outline, width=width)
-        d.arc([x1 - 2 * r, y0, x1, y0 + 2 * r], 270, 360, fill=outline, width=width)
-        d.arc([x0, y1 - 2 * r, x0 + 2 * r, y1], 90, 180, fill=outline, width=width)
-        d.arc([x1 - 2 * r, y1 - 2 * r, x1, y1], 0, 90, fill=outline, width=width)
-        d.line([x0 + r, y0, x1 - r, y0], fill=outline, width=width)
-        d.line([x0 + r, y1, x1 - r, y1], fill=outline, width=width)
-        d.line([x0, y0 + r, x0, y1 - r], fill=outline, width=width)
-        d.line([x1, y0 + r, x1, y1 - r], fill=outline, width=width)
+        d.line(pts + [pts[0]], fill=outline, width=width, joint='curve')
 
 
 def ctext(cx, y, text, fnt, color):
@@ -68,8 +79,8 @@ def ctext(cx, y, text, fnt, color):
 
 def check(cx, cy, r):
     d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=BLUE)
-    d.line([cx - r * 0.42, cy + r * 0.02, cx - r * 0.08, cy + r * 0.38], fill=WHITE, width=12)
-    d.line([cx - r * 0.08, cy + r * 0.38, cx + r * 0.48, cy - r * 0.34], fill=WHITE, width=12)
+    d.line([cx - r * 0.42, cy + r * 0.02, cx - r * 0.08, cy + r * 0.38], fill=WHITE, width=13, joint='curve')
+    d.line([cx - r * 0.08, cy + r * 0.38, cx + r * 0.48, cy - r * 0.34], fill=WHITE, width=13, joint='curve')
 
 
 ctext(W / 2, 70, '功能特性', font(FB, 84), DARK)
@@ -91,7 +102,7 @@ for i, (t, s) in enumerate(items):
     row = i // 2
     x0 = margin + col * (cw + gap)
     y0 = top + row * (ch + vgap)
-    rrect([x0, y0, x0 + cw, y0 + ch], 32, fill=CARD, outline=BORDER, width=4)
+    rrect([x0, y0, x0 + cw, y0 + ch], 32, fill=CARD, outline=BORDER, width=5)
     cy = y0 + ch // 2
     check(x0 + 110, cy, 44)
     d.text((x0 + 190, cy - 52), t, font=font(FB, 50), fill=DARK)
