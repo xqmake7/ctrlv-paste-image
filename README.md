@@ -4,6 +4,10 @@
 
 一个极小的 Windows 托盘工具：**单文件 exe 约 20 KB**，不打包任何运行时，双击即用。
 
+## 下载
+
+到 **[Releases](https://github.com/xqmake7/ctrlv-paste-image/releases/latest)** 下载 `CtrlV存图-*-win-x64.exe`，双击即用（免安装）。
+
 ## 特性
 
 - **Ctrl+V 存图**：前台是资源管理器窗口 → 存到该窗口当前打开的文件夹；前台是桌面 → 存到桌面文件夹。
