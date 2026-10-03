@@ -16,9 +16,11 @@
 - **托盘菜单**：`开机自启` 开关（写 `HKCU\...\Run`，移动 exe 后自动更新路径）、`退出`。
 - **零依赖**：只用系统自带的 .NET Framework / Win32 / GDI+，exe 内不含运行时。
 
-## 系统要求
+## 系统要求 / 支持平台
 
-- Windows 10 / 11（自带 .NET Framework 4.x）。
+- **操作系统**：Windows 10 / 11
+- **CPU 架构**：x64 / x86（exe 为 AnyCPU；ARM64 版 Windows 也可通过 x64 模拟运行）
+- **运行时**：系统自带 .NET Framework 4.x，无需额外安装
 
 ## 使用
 
