@@ -1,0 +1,12 @@
+# build output
+dist/
+build/
+
+# python
+__pycache__/
+*.pyc
+
+# misc
+*.user
+*.pdb
+.vs/
