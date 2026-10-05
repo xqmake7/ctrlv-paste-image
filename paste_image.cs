@@ -40,6 +40,21 @@ class App : Form
     [StructLayout(LayoutKind.Sequential)]
     struct KBDLLHOOKSTRUCT { public uint vkCode, scanCode, flags, time; public IntPtr dwExtraInfo; }
 
+    struct RECT { public int Left, Top, Right, Bottom; }
+
+    struct GUITHREADINFO
+    {
+        public int cbSize;
+        public int flags;
+        public IntPtr hwndActive;
+        public IntPtr hwndFocus;
+        public IntPtr hwndCapture;
+        public IntPtr hwndMenuOwner;
+        public IntPtr hwndMoveSize;
+        public IntPtr hwndCaret;
+        public RECT rcCaret;
+    }
+
     delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
 
     [DllImport("user32.dll", SetLastError = true)]
@@ -56,6 +71,12 @@ class App : Form
     static extern int GetClassName(IntPtr hWnd, StringBuilder text, int maxCount);
     [DllImport("user32.dll")]
     static extern IntPtr GetAncestor(IntPtr hWnd, uint flags);
+    [DllImport("user32.dll")]
+    static extern uint GetWindowThreadProcessId(IntPtr hWnd, IntPtr lpdwProcessId);
+    [DllImport("user32.dll")]
+    static extern bool GetGUIThreadInfo(uint idThread, ref GUITHREADINFO lpgui);
+    [DllImport("user32.dll")]
+    static extern IntPtr GetParent(IntPtr hWnd);
     [DllImport("user32.dll")]
     static extern bool AddClipboardFormatListener(IntPtr hWnd);
     [DllImport("user32.dll")]
@@ -271,6 +292,7 @@ class App : Form
         if ((DateTime.UtcNow - lastSave).TotalSeconds < minInterval) return;
         IntPtr hwnd = GetForegroundWindow();
         if (hwnd == IntPtr.Zero || (!IsExplorer(hwnd) && !IsDesktop(hwnd))) return;
+        if (IsEditingText(hwnd)) return;
         lastSave = DateTime.UtcNow;
         BeginInvoke((MethodInvoker)delegate { DoSave(hwnd); });
     }
@@ -292,6 +314,27 @@ class App : Form
     {
         string cls = ClassName(GetAncestor(hwnd, GA_ROOT));
         return cls == "Progman" || cls == "WorkerW";
+    }
+
+    static bool IsEditingText(IntPtr fg)
+    {
+        try
+        {
+            uint tid = GetWindowThreadProcessId(fg, IntPtr.Zero);
+            GUITHREADINFO gti = new GUITHREADINFO();
+            gti.cbSize = Marshal.SizeOf(typeof(GUITHREADINFO));
+            if (!GetGUIThreadInfo(tid, ref gti)) return false;
+            IntPtr focus = gti.hwndFocus;
+            for (int i = 0; i < 6 && focus != IntPtr.Zero; i++)
+            {
+                string cls = ClassName(focus);
+                if (cls == "Edit" || cls == "ComboBox" || cls == "msctls_edit") return true;
+                if (cls.IndexOf("RichEdit", StringComparison.OrdinalIgnoreCase) >= 0) return true;
+                focus = GetParent(focus);
+            }
+        }
+        catch { }
+        return false;
     }
 
     static string DesktopFolder()
